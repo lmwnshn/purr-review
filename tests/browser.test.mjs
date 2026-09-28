@@ -826,3 +826,20 @@ test('list progression follows the pre-save Decision order and undo restores the
   await settledUI();
   assert.equal(await currentPaperId(), '103');
 });
+
+
+test('demo launches the current UI with a fresh script URL each time', async () => {
+  const scriptURLs = [];
+  page.on('Network.requestWillBeSent', event => {
+    if (new URL(event.request.url).pathname.endsWith('/dist/purr-review.js')) scriptURLs.push(event.request.url);
+  });
+  await fixture();
+  await startApp();
+  assert.equal(scriptURLs.length, 1);
+  assert.match(new URL(scriptURLs[0]).searchParams.get('t'), /^\d+$/);
+  assert.equal(await page.evaluate(`Boolean(${shadow}.querySelector('#next-tbd') && ${shadow}.querySelector('[data-action="download"]') && ${shadow}.querySelector('option[value="decision-asc"]'))`), true);
+  await page.key('Escape');
+  await startApp();
+  assert.equal(scriptURLs.length, 2);
+  assert.notEqual(scriptURLs[0], scriptURLs[1]);
+});

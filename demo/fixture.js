@@ -136,7 +136,7 @@
 
   document.getElementById('launch').addEventListener('click', () => {
     const script = document.createElement('script');
-    script.src = '../dist/purr-review.js';
+    script.src = '../dist/purr-review.js?t=' + Date.now();
     script.onload = () => { script.remove(); status.textContent = 'Purr Review is running. Press Esc to return to the simulated CMT console.'; };
     script.onerror = () => { script.remove(); status.textContent = 'Could not load ../dist/purr-review.js. Keep the demo folder beside dist, then reopen this file.'; };
     document.head.append(script);
