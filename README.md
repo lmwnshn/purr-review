@@ -8,6 +8,6 @@ Zero install bookmarklet to speedily triage through CMT bidding.
 2. Drag **Purr Review** to your bookmarks bar
 3. Click the bookmark on CMT’s bidding page
 
-https://github.com/user-attachments/assets/feca0c44-d2b6-4852-8be2-f4b86e9abf6c
+https://github.com/user-attachments/assets/9953fb2b-0a06-4718-854a-37b1afc317a9
 
 Vibe-coded! Caveat emptor.
