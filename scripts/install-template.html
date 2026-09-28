@@ -27,10 +27,9 @@
         <h1>Purr Review.</br>Zero install bookmarklet.</h1>
         <div>
           <div class="install-options">
-            <a id="install-local" class="install" href="{{BOOKMARKLET}}" title="Drag Purr Review (local / desktop) to your bookmarks bar">Purr Review (local / desktop) <span aria-hidden="true">↗</span></a>
-            <a id="install-mobile" class="install" href="{{MOBILE_BOOKMARKLET}}" title="Drag Purr Review (CDN / mobile) to your bookmarks bar">Purr Review (CDN / mobile) <span aria-hidden="true">↗</span></a>
+            <a id="install" class="install" href="{{MOBILE_BOOKMARKLET}}" title="Drag Purr Review to your bookmarks bar">Purr Review <span aria-hidden="true">↗</span></a>
           </div>
-          <p class="hint">Drag the corresponding button to your bookmarks bar. Local is preferred, but URL length limits break Local on mobile browsers, hence the CDN version pulls the <a href="https://github.com/lmwnshn/purr-review/tree/main/dist" target="_blank" rel="noopener noreferrer">script</a> from GitHub instead.</p>
+          <p class="hint">Drag the button to your bookmarks bar. Because of URL length limits and to auto-update, we pull the script from <a href="https://github.com/lmwnshn/purr-review/tree/main/dist" target="_blank" rel="noopener noreferrer">GitHub</a> every time, that's the extent of network activity. If you want a 100% local version just use the <a href="https://github.com/lmwnshn/purr-review/blob/main/dist/bookmarklet.txt" target="_blank" rel="noopener noreferrer">bookmarklet script directly from GitHub</a>.</p>
           <a class="demo-link" href="demo/index.html">Open local demo <span aria-hidden="true">→</span></a>
         </div>
       </section>
@@ -49,16 +48,11 @@
     </section>
     <details>
       <summary>Copy bookmark URL</summary>
-      <p>Create a bookmark named <strong>Purr Review</strong>. Paste the corresponding text below into its URL field, including <code>javascript:</code>. On Chrome Android, open CMT, type <strong>Purr Review</strong> in the address bar, and tap the saved bookmark suggestion.</p>
+      <p>Create a bookmark named <strong>Purr Review</strong>. Paste the text below into its URL field, including <code>javascript:</code>. On Chrome Android, open CMT, type <strong>Purr Review</strong> in the address bar, and tap the saved bookmark suggestion.</p>
       <div class="copy-option">
-        <label for="bookmarklet-code-local">Bookmark URL (local / desktop)</label>
-        <textarea id="bookmarklet-code-local" readonly spellcheck="false" aria-label="Bookmark URL (local / desktop)">{{BOOKMARKLET}}</textarea>
-        <button type="button" data-copy-target="bookmarklet-code-local">Copy bookmark URL (local / desktop)</button><span class="copy-status" role="status" aria-live="polite"></span>
-      </div>
-      <div class="copy-option">
-        <label for="bookmarklet-code-mobile">Bookmark URL (CDN / mobile)</label>
-        <textarea id="bookmarklet-code-mobile" readonly spellcheck="false" aria-label="Bookmark URL (CDN / mobile)">{{MOBILE_BOOKMARKLET}}</textarea>
-        <button type="button" data-copy-target="bookmarklet-code-mobile">Copy bookmark URL (CDN / mobile)</button><span class="copy-status" role="status" aria-live="polite"></span>
+        <label for="bookmarklet-code">Bookmark URL</label>
+        <textarea id="bookmarklet-code" readonly spellcheck="false" aria-label="Bookmark URL">{{MOBILE_BOOKMARKLET}}</textarea>
+        <button type="button" data-copy-target="bookmarklet-code">Copy bookmark URL</button><span class="copy-status" role="status" aria-live="polite"></span>
       </div>
     </details>
     <details>

@@ -61,4 +61,4 @@ await Promise.all([
 ]);
 console.log(`Built dist/purr-review.js (${Buffer.byteLength(readable).toLocaleString('en-US')} bytes)`);
 console.log(`Built dist/bookmarklet.txt (${replacements.BOOKMARKLET_BYTES} bytes, excluding trailing newline)`);
-console.log('Built index.html with the complete bookmarklet embedded; no server or fetch required.');
+console.log('Built index.html with the hosted loader bookmarklet embedded.');

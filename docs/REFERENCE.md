@@ -62,7 +62,7 @@ The self-contained bookmark loads no remote scripts, fonts, assets, analytics, o
 - `dist/purr-review.js`: readable, self-contained script used by the CDN loader and demo.
 - `dist/bookmarklet.txt`: complete self-contained `javascript:` URL.
 - `src/loader.js` / `dist/bookmarklet-mobile.txt`: optional short hosted loader.
-- `index.html`: installation page with the full URL embedded; no fetch needed.
+- `index.html`: installation page with the auto-updating hosted bookmark and a link to the fully local alternative.
 - `demo/index.html`: local simulation.
 
 ## Maintainer build (optional)
