@@ -5,7 +5,7 @@ import { launchChrome } from './chrome.mjs';
 
 const root = new URL('../', import.meta.url);
 const url = (await readFile(new URL('dist/bookmarklet-mobile.txt', root), 'utf8')).trim();
-const bundle = await readFile(new URL('dist/purr-review.min.js', root), 'utf8');
+const bundle = await readFile(new URL('dist/purr-review.js', root), 'utf8');
 let page;
 let failLoad = false;
 const requests = [];
@@ -58,7 +58,7 @@ test('short javascript URL launches the app, submits a bid, and reuses the activ
   await page.until('Boolean(window.__PURR_REVIEW__)', 'loader launched');
   assert.equal(requests.length, before + 1);
   const firstURL = new URL(requests.at(-1).url);
-  assert.equal(firstURL.origin + firstURL.pathname, 'https://wanshenl.me/purr-review/dist/purr-review.min.js');
+  assert.equal(firstURL.origin + firstURL.pathname, 'https://wanshenl.me/purr-review/dist/purr-review.js');
   assert.match(firstURL.searchParams.get('t'), /^\d+$/);
   assert.ok(!Object.keys(requests.at(-1).headers).some(key => /^(referer|cookie)$/i.test(key)));
   assert.deepEqual(await page.evaluate('window.loaderPrivacy'), { referrerPolicy: 'no-referrer', crossOrigin: 'anonymous' });

@@ -25,7 +25,7 @@ const result = await minify(readable, {
   format: { ascii_only: true, comments: false },
 });
 if (!result.code) throw new Error('Minifier returned an empty script.');
-new vm.Script(result.code, { filename: 'purr-review.min.js' });
+new vm.Script(result.code, { filename: 'desktop-bookmarklet.js' });
 
 const bookmarklet = `javascript:${encodeURIComponent(result.code)}`;
 if (decodeURIComponent(bookmarklet.slice(11)) !== result.code) {
@@ -47,7 +47,6 @@ const replacements = {
   BOOKMARKLET: escapeHTML(bookmarklet),
   MOBILE_BOOKMARKLET: escapeHTML(mobileBookmarklet),
   BOOKMARKLET_BYTES: Buffer.byteLength(bookmarklet).toLocaleString('en-US'),
-  SCRIPT_BYTES: Buffer.byteLength(result.code).toLocaleString('en-US'),
 };
 const installer = template.replace(/\{\{([A-Z_]+)\}\}/g, (_, token) => {
   if (!(token in replacements)) throw new Error(`Unknown installer token: ${token}`);
@@ -56,12 +55,10 @@ const installer = template.replace(/\{\{([A-Z_]+)\}\}/g, (_, token) => {
 await mkdir(resolve(root, 'dist'), { recursive: true });
 await Promise.all([
   writeFile(resolve(root, 'dist/purr-review.js'), readable),
-  writeFile(resolve(root, 'dist/purr-review.min.js'), `${result.code}\n`),
   writeFile(resolve(root, 'dist/bookmarklet-mobile.txt'), `${mobileBookmarklet}\n`),
   writeFile(resolve(root, 'dist/bookmarklet.txt'), `${bookmarklet}\n`),
   writeFile(resolve(root, 'index.html'), installer),
 ]);
 console.log(`Built dist/purr-review.js (${Buffer.byteLength(readable).toLocaleString('en-US')} bytes)`);
-console.log(`Built dist/purr-review.min.js (${replacements.SCRIPT_BYTES} bytes)`);
 console.log(`Built dist/bookmarklet.txt (${replacements.BOOKMARKLET_BYTES} bytes, excluding trailing newline)`);
 console.log('Built index.html with the complete bookmarklet embedded; no server or fetch required.');

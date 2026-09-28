@@ -8,7 +8,7 @@
   script.crossOrigin = 'anonymous';
   script.referrerPolicy = 'no-referrer';
   // A fresh URL avoids the host/browser cache retaining an older release.
-  script.src = 'https://wanshenl.me/purr-review/dist/purr-review.min.js?t=' + Date.now();
+  script.src = 'https://wanshenl.me/purr-review/dist/purr-review.js?t=' + Date.now();
   let timer;
   const finish = failed => {
     clearTimeout(timer);

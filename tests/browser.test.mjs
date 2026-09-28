@@ -299,10 +299,10 @@ test('exit during a submitted save removes only Purr Review; the CMT callback st
   assert.equal(await page.evaluate('Boolean(document.getElementById("purr-review-root"))'), false);
 });
 
-test('production minified bundle makes the same verified DOM change', async () => {
+test('self-contained desktop bookmarklet makes the same verified DOM change', async () => {
   await fixture();
-  const minified = await readFile(new URL('dist/purr-review.min.js', root), 'utf8');
-  await page.evaluate(minified);
+  const bookmarklet = (await readFile(new URL('dist/bookmarklet.txt', root), 'utf8')).trim();
+  await page.evaluate(decodeURIComponent(bookmarklet.slice('javascript:'.length)));
   await page.key('ArrowUp');
   await settle(1);
   assert.equal(await page.evaluate(`${anchor('101')}.textContent`), 'Eager');
