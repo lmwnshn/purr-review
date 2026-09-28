@@ -772,3 +772,57 @@ test('current Decision sorting breaks ties by numeric Paper ID and updates after
   await settledUI();
   assert.deepEqual(await sidebarIds(), ['11', '10', '2', '3', '20', '100', '8']);
 });
+
+async function nextTBDOnly(checked) {
+  await page.evaluate(`(() => { const input = ${shadow}.querySelector('#next-tbd'); input.checked = ${checked}; input.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+}
+
+test('header progression mode includes existing bids and unavailable papers, wraps, and switches back to TBD', async () => {
+  await launch();
+  assert.equal(await page.evaluate(`${shadow}.querySelector('#next-tbd').checked`), true);
+  await nextTBDOnly(false);
+  await page.evaluate(`${paperItem('103')}.click()`);
+  await page.evaluate(`${shadow}.querySelector('[data-action="bid"][data-bid="Willing"]').click()`);
+  assert.equal(await page.evaluate(`${shadow}.querySelector('#next-tbd').disabled`), true);
+  await nextTBDOnly(true);
+  assert.equal(await page.evaluate(`${shadow}.querySelector('#next-tbd').checked`), false);
+  await settle(1);
+  await settledUI();
+  assert.equal(await currentPaperId(), '104');
+  await page.evaluate(click('skip'));
+  await settledUI();
+  assert.equal(await currentPaperId(), '105');
+  await page.evaluate(click('skip'));
+  await settledUI();
+  assert.equal(await currentPaperId(), '106');
+  await page.evaluate(`${paperItem('107')}.click()`);
+  await page.evaluate(click('skip'));
+  await settledUI();
+  assert.equal(await currentPaperId(), '101');
+  await page.evaluate(`${paperItem('103')}.click()`);
+  await nextTBDOnly(true);
+  await page.evaluate(click('skip'));
+  await settledUI();
+  assert.equal(await currentPaperId(), '106');
+  assert.equal(await page.evaluate('demo.requests.length'), 1);
+});
+
+test('list progression follows the pre-save Decision order and undo restores the previous paper', async () => {
+  await launch();
+  await sortPapers('decision-desc');
+  await nextTBDOnly(false);
+  await page.evaluate(`${paperItem('104')}.click()`);
+  await page.evaluate(`${shadow}.querySelector('[data-action="bid"][data-bid="Not Willing"]').click()`);
+  await settle(1);
+  await settledUI();
+  assert.equal(await currentPaperId(), '101');
+  await page.evaluate(click('undo'));
+  await settle(2);
+  await settledUI();
+  assert.equal(await currentPaperId(), '104');
+  assert.equal(await page.evaluate(`${anchor('104')}.textContent`), 'Eager');
+  await sortPapers('id-desc');
+  await page.evaluate(click('skip'));
+  await settledUI();
+  assert.equal(await currentPaperId(), '103');
+});

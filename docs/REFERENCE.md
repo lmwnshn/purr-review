@@ -4,6 +4,8 @@ Commands and paths below are relative to the repository root.
 
 ## Use
 
+The header’s **Next TBD only** checkbox is on by default. Uncheck it to advance through every paper in the selected sort order, including existing decisions and unavailable papers. Advancing wraps at the end. Decision sorting uses the next paper’s position before the save reshuffles the list. Undo still returns to the paper just changed.
+
 Decision sorting uses current bids, from Not Willing through Eager (or the reverse), followed by TBD and unavailable papers. Every sort breaks ties by ascending numeric Paper ID.
 
 Download exports all loaded papers to `purr-review.csv` with Title, Abstract, Decision, Relevance, and TPMS columns. Decisions reflect confirmed bids; unbid papers are TBD and unknown bids are Unavailable. The file is generated locally.

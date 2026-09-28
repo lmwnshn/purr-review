@@ -25,7 +25,7 @@ function launchPurrReview() {
   const state = {
     papers: [], queue: [], skipped: [], history: [], processed: new Set(),
     existing: [], unavailable: [], current: null, busy: false, undoRequested: false,
-    error: '', blocked: false, panel: null, status: '', sort: 'id-asc', bids: new Map(),
+    error: '', blocked: false, panel: null, status: '', sort: 'id-asc', nextTBD: true, bids: new Map(),
     fatal: '', pageDialog: false, destroyed: false, displayedBid: null,
     typography: { auto: true, title: 20, abstract: 20, effectiveTitle: 20, effectiveAbstract: 20 },
   };
@@ -56,7 +56,9 @@ function launchPurrReview() {
     .bid-total[data-count-bid="Willing"] { background:#ef4a7540; }
     .bid-total[data-count-bid="Eager"] { background:#fe3c7266; }
     .bid-total[data-count-bid="Not Entered"] { background:#fff; border:1px solid #42424226; }
-    .header-right { display:flex; align-items:center; gap:12px; flex:none; }
+    .header-right { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:12px; flex:none; max-width:100%; }
+    .next-mode { display:flex; align-items:center; gap:5px; font-size:12px; cursor:pointer; }
+    .next-mode input { margin:0; accent-color:#ef4a75; }
     .icon-button { font-size:20px; width:32px; height:32px; border-radius:50%; color:#424242; }
     .icon-button:hover { background:#fe3c7214; }
     .text-button { padding:2px 0; font-size:12px; text-decoration:underline; text-decoration-color:#ef4a75; text-underline-offset:4px; }
@@ -186,7 +188,7 @@ function launchPurrReview() {
       <dl class="bid-summary" aria-label="Bid counts for loaded papers" title="Loaded papers with known bids. TBD means Not Entered; unknown bids and conflicts are excluded.">
         ${COUNT_BIDS.map(bid => `<div class="bid-total" data-count-bid="${bid}"><dt>${bid === 'Not Entered' ? 'TBD' : bid}</dt><dd>0</dd></div>`).join('')}
       </dl>
-      <div class="header-right"><button class="text-button" data-action="download" title="Download papers and decisions as CSV">Download</button><button class="text-button type-button" data-action="text-size" aria-label="Text size">Text size</button><button class="icon-button" data-action="exit" aria-label="Exit Purr Review" title="Exit (Esc)">×</button></div>
+      <div class="header-right"><label class="next-mode" title="Checked: advance to the next TBD. Unchecked: advance to the next paper in the sorted list."><input type="checkbox" id="next-tbd" checked>Next TBD only</label><button class="text-button" data-action="download" title="Download papers and decisions as CSV">Download</button><button class="text-button type-button" data-action="text-size" aria-label="Text size">Text size</button><button class="icon-button" data-action="exit" aria-label="Exit Purr Review" title="Exit (Esc)">×</button></div>
     </header>
     <div class="notice" role="alert" hidden><span></span><button data-action="exit">Return to CMT ↗</button></div>
     <div class="work-area">
@@ -317,6 +319,7 @@ function launchPurrReview() {
     $('[data-action="text-size"]').disabled = state.busy;
     $$('.paper-item').forEach(button => { button.disabled = locked; });
     $('#paper-sort').disabled = locked;
+    $('#next-tbd').disabled = locked;
   }
 
   function canBid(paper) {
@@ -343,6 +346,12 @@ function launchPurrReview() {
     const right = score(b);
     if (left === null || right === null) return left === right ? byID : left === null ? 1 : -1;
     return (state.sort === 'relevance-desc' ? right - left : left - right) || byID;
+  }
+
+  function nextInList(paper) {
+    const papers = [...state.papers].sort(comparePapers);
+    if (papers.length < 2) return null;
+    return papers[(papers.findIndex(item => item.id === paper.id) + 1) % papers.length];
   }
 
   function orderQueue() {
@@ -518,6 +527,7 @@ function launchPurrReview() {
   function decide(bid) {
     if (!canBid(state.current) || !BIDS.includes(bid) || state.panel || state.busy || state.blocked || state.pageDialog) return;
     const paper = state.current;
+    const next = state.nextTBD ? null : nextInList(paper);
     cancelGesture(false);
     serialize(async () => {
       const previousBid = state.displayedBid;
@@ -531,7 +541,8 @@ function launchPurrReview() {
       state.processed.add(paper.id);
       state.bids.set(paper.id, bid);
       state.queue = state.queue.filter(item => item.id !== paper.id);
-      state.current = state.queue[0] || null;
+      state.current = state.nextTBD ? state.queue[0] || null : next;
+      if (!state.nextTBD) orderQueue();
       state.status = 'Confirmed in CMT';
       renderPaper();
       if (state.current) await enter();
@@ -572,11 +583,13 @@ function launchPurrReview() {
     state.busy = true;
     setStatus('Skipping…');
     const paper = state.current;
+    const next = state.nextTBD ? null : nextInList(paper);
     await animateCard([{ opacity: 1 }, { opacity: 0, transform: 'translateY(8px)' }], 110);
     if (signal.aborted) return;
     if (canBid(paper) && !state.skipped.some(item => item.id === paper.id)) state.skipped.push(paper);
     state.queue = state.queue.filter(item => item.id !== paper.id);
-    state.current = state.queue[0] || null;
+    state.current = state.nextTBD ? state.queue[0] || null : next;
+    if (!state.nextTBD) orderQueue();
     state.status = 'Skipped · bid unchanged';
     renderPaper();
     if (state.current) await enter();
@@ -808,6 +821,18 @@ function launchPurrReview() {
     actions[button.dataset.action]?.();
   }, { signal });
   root.addEventListener('change', event => {
+    if (event.target.id === 'next-tbd') {
+      if (state.busy || state.blocked || state.pageDialog || state.panel) {
+        event.target.checked = state.nextTBD;
+        return;
+      }
+      state.nextTBD = event.target.checked;
+      state.queue = state.papers.filter(paper => canBid(paper) && currentBid(paper) === 'Not Entered' && !state.skipped.some(item => item.id === paper.id));
+      orderQueue();
+      if (!state.current) state.current = state.nextTBD ? state.queue[0] || null : [...state.papers].sort(comparePapers)[0] || null;
+      renderPaper();
+      return;
+    }
     if (event.target.id !== 'paper-sort') return;
     const sort = event.target.value;
     if (state.busy || state.blocked || state.pageDialog || state.panel || !['id-asc', 'id-desc', 'relevance-asc', 'relevance-desc', 'decision-asc', 'decision-desc'].includes(sort)) {
