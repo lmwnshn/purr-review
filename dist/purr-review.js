@@ -545,7 +545,7 @@ function launchPurrReview() {
       <dl class="bid-summary" aria-label="Bid counts for loaded papers" title="Loaded papers with known bids. TBD means Not Entered; unknown bids and conflicts are excluded.">
         ${COUNT_BIDS.map(bid => `<div class="bid-total" data-count-bid="${bid}"><dt>${bid === 'Not Entered' ? 'TBD' : bid}</dt><dd>0</dd></div>`).join('')}
       </dl>
-      <div class="header-right"><button class="text-button type-button" data-action="text-size" aria-label="Text size">Text size</button><button class="icon-button" data-action="exit" aria-label="Exit Purr Review" title="Exit (Esc)">×</button></div>
+      <div class="header-right"><button class="text-button" data-action="download" title="Download papers and decisions as CSV">Download</button><button class="text-button type-button" data-action="text-size" aria-label="Text size">Text size</button><button class="icon-button" data-action="exit" aria-label="Exit Purr Review" title="Exit (Esc)">×</button></div>
     </header>
     <div class="notice" role="alert" hidden><span></span><button data-action="exit">Return to CMT ↗</button></div>
     <div class="work-area">
@@ -629,6 +629,24 @@ function launchPurrReview() {
 
   function announce(message) { $('#announcement').textContent = message; }
   function setStatus(text) { state.status = text; announce(text); renderStatus(); }
+  function downloadCSV() {
+    const quote = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+    const rows = [['Title', 'Abstract', 'Decision'], ...state.papers.map(paper => {
+      const bid = paper.disabledReason ? paper.existingBid : state.bids.get(paper.id);
+      return [paper.title, paper.abstract, bid === 'Not Entered' ? 'TBD' : bid || 'Unavailable'];
+    })];
+    const csv = '\uFEFF' + rows.map(row => row.map(quote).join(',')).join('\r\n') + '\r\n';
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'purr-review.csv';
+    link.hidden = true;
+    root.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+
   function renderBidCounts() {
     const counts = new Map(COUNT_BIDS.map(bid => [bid, 0]));
     for (const paper of state.papers) {
@@ -640,6 +658,7 @@ function launchPurrReview() {
 
   function renderStatus() {
     renderBidCounts();
+    $('[data-action="download"]').disabled = state.busy || !state.papers.length;
     const message = state.pageDialog ? 'CMT has opened a dialog. Return to CMT to resolve it before continuing.' : state.error;
     $('.notice').hidden = !message;
     $('.notice span').textContent = message;
@@ -1130,7 +1149,7 @@ function launchPurrReview() {
     const button = event.target.closest('button[data-action]');
     if (!button || button.disabled) return;
     const actions = { bid: () => decide(button.dataset.bid), undo, skip, details: () => openPanel('details'),
-      exit: destroy, 'jump-paper': () => jumpPaper(button.dataset.paperId), 'revisit-skipped': revisitSkipped,
+      download: downloadCSV, exit: destroy, 'jump-paper': () => jumpPaper(button.dataset.paperId), 'revisit-skipped': revisitSkipped,
       'text-size': () => openPanel('typography'), 'close-panel': closePanel };
     actions[button.dataset.action]?.();
   }, { signal });

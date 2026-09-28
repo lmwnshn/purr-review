@@ -1,6 +1,6 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdtemp, rm } from 'node:fs/promises';
 import { launchChrome } from './chrome.mjs';
 
 const root = new URL('../', import.meta.url);
@@ -585,6 +585,7 @@ test('sidebar navigation and sorting stay locked while a bid is saving', async (
   await page.evaluate('document.getElementById("slow").checked = true');
   await page.key('ArrowRight');
   await page.until('demo.requests.length === 1', 'slow bid started');
+  assert.equal(await page.evaluate(`${shadow}.querySelector('[data-action="download"]').disabled`), true);
   assert.equal(await page.evaluate(`${shadow}.querySelector('#paper-sort').disabled`), true);
   assert.equal(await page.evaluate(`Array.from(${shadow}.querySelectorAll('.paper-item')).every(item => item.disabled)`), true);
   await page.evaluate(`${paperItem('103')}.click()`);
@@ -706,4 +707,38 @@ test('paper text stays inert and diagnostics omit paper content', async () => {
   await page.key('ArrowRight');
   await page.until('window.demo.outcomes.length === 1 && !window.__PURR_REVIEW__.diagnostics().session.busy', 'private synthetic paper saved');
   assert.equal((await page.evaluate('JSON.stringify(window.__PURR_REVIEW__.diagnostics())')).includes(marker), false);
+});
+
+
+test('Download saves a UTF-8 CSV with all papers, escaped text, and confirmed decisions', async () => {
+  const title = 'Synthetic, "quoted" title — café';
+  const abstract = 'First line\nSecond, "quoted" line';
+  await launch({ title, abstract });
+  await page.key('ArrowRight');
+  await settle(1);
+  await settledUI();
+  const directory = await mkdtemp('/tmp/purr-review-csv-');
+  try {
+    await page.call('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: directory });
+    await page.evaluate(click('download'));
+    let csv;
+    for (let attempt = 0; attempt < 50; attempt++) {
+      try { csv = await readFile(directory + '/purr-review.csv', 'utf8'); break; }
+      catch (error) { if (error.code !== 'ENOENT') throw error; }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    assert.ok(csv, 'CSV file downloaded');
+    const papers = await page.evaluate('demo.initial');
+    papers[0].title = title;
+    papers[0].abstract = abstract;
+    const quote = value => '"' + value.replace(/"/g, '""') + '"';
+    const expectedRows = [['Title', 'Abstract', 'Decision'], ...papers.map((paper, i) => [
+      paper.title, paper.abstract, i === 0 ? 'Willing' : paper.conflict ? 'Unavailable' : paper.bid === 'Not Entered' ? 'TBD' : paper.bid
+    ])];
+    assert.equal(csv, '\uFEFF' + expectedRows.map(row => row.map(quote).join(',')).join('\r\n') + '\r\n');
+    assert.equal(await page.evaluate('demo.requests.length'), 1);
+  } finally {
+    await page.call('Browser.setDownloadBehavior', { behavior: 'default' });
+    await rm(directory, { recursive: true, force: true });
+  }
 });

@@ -4,6 +4,8 @@ Commands and paths below are relative to the repository root.
 
 ## Use
 
+Download exports all loaded papers to `purr-review.csv` with Title, Abstract, and Decision columns. Decisions reflect confirmed bids; unbid papers are TBD and unknown bids are Unavailable. The file is generated locally.
+
 The header counts all loaded papers with recognized bids. TBD means Not Entered, including skipped unbid papers. Unknown/conflicted bids are excluded. Counts change after confirmed decisions and undo.
 
 | Key | Action |
