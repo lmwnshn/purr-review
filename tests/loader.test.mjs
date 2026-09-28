@@ -57,7 +57,9 @@ test('short javascript URL launches the app, submits a bid, and reuses the activ
   await page.navigate(url);
   await page.until('Boolean(window.__PURR_REVIEW__)', 'loader launched');
   assert.equal(requests.length, before + 1);
-  assert.equal(requests.at(-1).url, 'https://wanshenl.me/purr-review/dist/purr-review.min.js');
+  const firstURL = new URL(requests.at(-1).url);
+  assert.equal(firstURL.origin + firstURL.pathname, 'https://wanshenl.me/purr-review/dist/purr-review.min.js');
+  assert.match(firstURL.searchParams.get('t'), /^\d+$/);
   assert.ok(!Object.keys(requests.at(-1).headers).some(key => /^(referer|cookie)$/i.test(key)));
   assert.deepEqual(await page.evaluate('window.loaderPrivacy'), { referrerPolicy: 'no-referrer', crossOrigin: 'anonymous' });
   assert.equal(await page.evaluate('Boolean(document.getElementById("purr-review-loader"))'), false);
@@ -67,6 +69,11 @@ test('short javascript URL launches the app, submits a bid, and reuses the activ
   await page.navigate(url);
   assert.equal(requests.length, before + 1);
   assert.equal(await page.evaluate('window.__PURR_REVIEW__.diagnostics().session.history'), 1);
+  await page.evaluate('window.__PURR_REVIEW__.destroy()');
+  await page.navigate(url);
+  await page.until('Boolean(window.__PURR_REVIEW__)', 'fresh launch');
+  assert.equal(requests.length, before + 2);
+  assert.notEqual(requests.at(-1).url, firstURL.href);
 });
 
 test('blocked script download reports a visible error and permits retry', async () => {
