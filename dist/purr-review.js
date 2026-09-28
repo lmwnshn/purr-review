@@ -376,6 +376,7 @@ function launchPurrReview() {
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const animationSet = new Set();
   const BIDS = ['Not Willing', 'In a Pinch', 'Willing', 'Eager'];
+  const COUNT_BIDS = [...BIDS, 'Not Entered'];
   const DIRECTIONS = ['left', 'down', 'right', 'up'];
   const ARROWS = ['←', '↓', '→', '↑'];
   const KEY_BIDS = { ArrowLeft: BIDS[0], ArrowDown: BIDS[1], ArrowRight: BIDS[2], ArrowUp: BIDS[3] };
@@ -407,6 +408,13 @@ function launchPurrReview() {
     .brand { display:flex; gap:9px; align-items:center; min-width:0; min-height:36px; color:inherit; text-decoration:none; border-radius:4px; }
     .github-mark { width:24px; height:24px; flex:none; fill:currentColor; }
     .brand-name { font-size:14px; font-weight:650; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .bid-summary { display:flex; align-items:stretch; gap:5px; margin:0; padding:0; }
+    .bid-total { display:flex; align-items:center; gap:6px; padding:5px 8px; border-radius:5px; background:#4242420a; font-size:11px; line-height:1.25; }
+    .bid-total dt { max-width:55px; } .bid-total dd { margin:0; font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; }
+    .bid-total[data-count-bid="In a Pinch"] { background:#fd55641f; }
+    .bid-total[data-count-bid="Willing"] { background:#ef4a7540; }
+    .bid-total[data-count-bid="Eager"] { background:#fe3c7266; }
+    .bid-total[data-count-bid="Not Entered"] { background:#fff; border:1px solid #42424226; }
     .header-right { display:flex; align-items:center; gap:12px; flex:none; }
     .icon-button { font-size:20px; width:32px; height:32px; border-radius:50%; color:#424242; }
     .icon-button:hover { background:#fe3c7214; }
@@ -497,6 +505,15 @@ function launchPurrReview() {
     .type-field input { grid-column:1 / -1; width:100%; margin:0; }
     pre { font:12px/1.6 ui-monospace,monospace; white-space:pre-wrap; }
     .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media(max-width:1050px) {
+      header { flex-wrap:wrap; } .header-right { margin-left:auto; }
+      .bid-summary { order:3; width:100%; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); padding-bottom:4px; }
+      .bid-total { justify-content:space-between; min-width:0; padding:4px 6px; gap:4px; }
+    }
+    @media(max-width:480px) {
+      .bid-summary { gap:4px; } .bid-total { flex-direction:column; justify-content:center; gap:2px; text-align:center; font-size:10px; }
+      .bid-total dt { max-width:none; min-height:2.5em; display:flex; align-items:center; } .bid-total dd { font-size:14px; }
+    }
     @media(max-width:760px) {
       header { padding:4px 10px; gap:8px; } .header-right { gap:4px; } .brand { gap:7px; } .brand-name { font-size:12px; } .github-mark { width:22px; height:22px; }
       .work-area { grid-template-columns:80px minmax(0,1fr); } .paper-sidebar { gap:4px; padding:8px 5px 0; } #paper-sort { font-size:11px; padding:4px 0; min-height:36px; } .paper-item { padding:7px 5px; justify-content:center; } .paper-bid { display:none; } .paper-number { font-size:12px; }
@@ -525,6 +542,9 @@ function launchPurrReview() {
   shell.innerHTML = `
     <header>
       <a class="brand" href="https://github.com/lmwnshn/purr-review" target="_blank" rel="noopener noreferrer" aria-label="lmwnshn/purr-review on GitHub" title="GitHub"><svg class="github-mark" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span class="brand-name">lmwnshn/purr-review</span></a>
+      <dl class="bid-summary" aria-label="Bid counts for loaded papers" title="Loaded papers with known bids. TBD means Not Entered; unknown bids and conflicts are excluded.">
+        ${COUNT_BIDS.map(bid => `<div class="bid-total" data-count-bid="${bid}"><dt>${bid === 'Not Entered' ? 'TBD' : bid}</dt><dd>0</dd></div>`).join('')}
+      </dl>
       <div class="header-right"><button class="text-button type-button" data-action="text-size" aria-label="Text size">Text size</button><button class="icon-button" data-action="exit" aria-label="Exit Purr Review" title="Exit (Esc)">×</button></div>
     </header>
     <div class="notice" role="alert" hidden><span></span><button data-action="exit">Return to CMT ↗</button></div>
@@ -609,7 +629,17 @@ function launchPurrReview() {
 
   function announce(message) { $('#announcement').textContent = message; }
   function setStatus(text) { state.status = text; announce(text); renderStatus(); }
+  function renderBidCounts() {
+    const counts = new Map(COUNT_BIDS.map(bid => [bid, 0]));
+    for (const paper of state.papers) {
+      const bid = paper.disabledReason ? paper.existingBid : state.bids.get(paper.id);
+      if (counts.has(bid)) counts.set(bid, counts.get(bid) + 1);
+    }
+    for (const item of $$('.bid-total')) item.querySelector('dd').textContent = String(counts.get(item.dataset.countBid));
+  }
+
   function renderStatus() {
+    renderBidCounts();
     const message = state.pageDialog ? 'CMT has opened a dialog. Return to CMT to resolve it before continuing.' : state.error;
     $('.notice').hidden = !message;
     $('.notice span').textContent = message;

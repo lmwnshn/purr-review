@@ -12,6 +12,12 @@ const anchor = id => `document.querySelector('tr[bidding="${id}"] a[title="Click
 const click = action => `${shadow}.querySelector('[data-action="${action}"]').click()`;
 const paperItem = id => `${shadow}.querySelector('.paper-item[data-paper-id="${id}"]')`;
 
+async function bidCounts() {
+  return page.evaluate(`Array.from(${shadow}.querySelectorAll('.bid-total'), item => [item.querySelector('dt').textContent, Number(item.querySelector('dd').textContent)])`);
+}
+const initialCounts = [['Not Willing', 0], ['In a Pinch', 0], ['Willing', 0], ['Eager', 1], ['TBD', 5]];
+const willingCounts = [['Not Willing', 0], ['In a Pinch', 0], ['Willing', 1], ['Eager', 1], ['TBD', 4]];
+
 before(async () => { page = await launchChrome(); });
 after(async () => { await page?.close(); });
 
@@ -591,8 +597,22 @@ test('sidebar navigation and sorting stay locked while a bid is saving', async (
   assert.equal(await page.evaluate(`Array.from(${shadow}.querySelectorAll('.paper-item')).every(item => !item.disabled)`), true);
 });
 
+test('header counts include existing bids and skipped papers, excluding conflicts', async () => {
+  await fixture();
+  await page.evaluate(`demo.initial[1].bid = 'Not Willing'; demo.initial[2].bid = 'In a Pinch'; demo.initial[5].bid = 'Willing'; demo.reset()`);
+  await startApp();
+  const expected = [['Not Willing', 1], ['In a Pinch', 1], ['Willing', 1], ['Eager', 1], ['TBD', 2]];
+  assert.deepEqual(await bidCounts(), expected);
+  await page.key('s');
+  await settledUI();
+  await sortPapers('id-desc');
+  await page.evaluate(`${paperItem('105')}.click()`);
+  assert.deepEqual(await bidCounts(), expected);
+});
+
 test('sidebar bid labels and colors change only after verified saves and undo', async () => {
   await launch();
+  assert.deepEqual(await bidCounts(), initialCounts);
   const initial = await page.evaluate(`({text:${paperItem('101')}.textContent,color:getComputedStyle(${paperItem('101')}).backgroundColor})`);
   await page.evaluate('document.getElementById("slow").checked = true');
   await page.key('ArrowRight');
@@ -600,21 +620,25 @@ test('sidebar bid labels and colors change only after verified saves and undo', 
   assert.equal(await page.evaluate(`${paperItem('101')}.dataset.bid`), 'unbid');
   assert.equal(await page.evaluate(`${paperItem('101')}.textContent`), initial.text);
   assert.equal(await page.evaluate(`getComputedStyle(${paperItem('101')}).backgroundColor`), initial.color);
+  assert.deepEqual(await bidCounts(), initialCounts);
   await settle(1);
   await settledUI();
   assert.equal(await page.evaluate(`${paperItem('101')}.dataset.bid`), 'willing');
   assert.match(await page.evaluate(`${paperItem('101')}.textContent`), /Willing/);
   const savedColor = await page.evaluate(`getComputedStyle(${paperItem('101')}).backgroundColor`);
   assert.notEqual(savedColor, initial.color);
+  assert.deepEqual(await bidCounts(), willingCounts);
   await page.key('z');
   await page.until('demo.requests.length === 2', 'undo awaiting confirmation');
   assert.equal(await page.evaluate(`${paperItem('101')}.dataset.bid`), 'willing');
   assert.equal(await page.evaluate(`getComputedStyle(${paperItem('101')}).backgroundColor`), savedColor);
+  assert.deepEqual(await bidCounts(), willingCounts);
   await settle(2);
   await settledUI();
   assert.equal(await page.evaluate(`${paperItem('101')}.dataset.bid`), 'unbid');
   assert.equal(await page.evaluate(`${paperItem('101')}.textContent`), initial.text);
   assert.equal(await page.evaluate(`getComputedStyle(${paperItem('101')}).backgroundColor`), initial.color);
+  assert.deepEqual(await bidCounts(), initialCounts);
 });
 
 test('failed saves preserve sidebar bid state and lock navigation', async () => {
@@ -623,6 +647,7 @@ test('failed saves preserve sidebar bid state and lock navigation', async () => 
   await page.evaluate('document.getElementById("fail").checked = true');
   await page.key('ArrowUp');
   await page.until('window.__PURR_REVIEW__.diagnostics().session.blocked', 'failed save blocked');
+  assert.deepEqual(await bidCounts(), initialCounts);
   assert.equal(await page.evaluate(`${paperItem('101')}.dataset.bid`), 'unbid');
   assert.equal(await page.evaluate(`${paperItem('101')}.textContent`), initial.text);
   assert.equal(await page.evaluate(`getComputedStyle(${paperItem('101')}).backgroundColor`), initial.color);

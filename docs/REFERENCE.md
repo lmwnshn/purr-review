@@ -4,6 +4,8 @@ Commands and paths below are relative to the repository root.
 
 ## Use
 
+The header counts all loaded papers with recognized bids. TBD means Not Entered, including skipped unbid papers. Unknown/conflicted bids are excluded. Counts change after confirmed decisions and undo.
+
 | Key | Action |
 | --- | --- |
 | ← | Not Willing |
