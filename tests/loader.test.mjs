@@ -34,14 +34,20 @@ async function fixture() {
   await page.until('Boolean(window.demo)', 'demo loaded');
 }
 
-test('installer copies the complete short URL without quotes or HTML entities', async () => {
+test('both installer buttons and copy options contain the corresponding complete URL', async () => {
   assert.ok(url.length < 2000);
+  const local = (await readFile(new URL('dist/bookmarklet.txt', root), 'utf8')).trim();
   await page.navigate(new URL('index.html', root).href);
-  await page.until('Boolean(document.getElementById("copy-bookmarklet"))', 'installer loaded');
-  assert.equal(await page.evaluate('document.getElementById("bookmarklet-code").value'), url);
-  await page.evaluate(`Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async value => { window.copiedBookmark = value; } } });document.getElementById('copy-bookmarklet').click()`);
-  await page.until('typeof window.copiedBookmark === "string"', 'copied');
-  assert.equal(await page.evaluate('window.copiedBookmark'), url);
+  await page.until('Boolean(document.querySelector("[data-copy-target]"))', 'installer loaded');
+  await page.evaluate(`Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async value => { window.copiedBookmark = value; } } })`);
+  for (const [variant, expected] of [['local', local], ['mobile', url]]) {
+    assert.equal(await page.evaluate(`document.getElementById('install-${variant}').getAttribute('href')`), expected);
+    assert.equal(await page.evaluate(`document.getElementById('bookmarklet-code-${variant}').value`), expected);
+    await page.evaluate(`window.copiedBookmark = null; document.querySelector('[data-copy-target="bookmarklet-code-${variant}"]').click()`);
+    await page.until('typeof window.copiedBookmark === "string"', 'copied');
+    assert.equal(await page.evaluate('window.copiedBookmark'), expected);
+    assert.match(await page.evaluate(`document.querySelector('[data-copy-target="bookmarklet-code-${variant}"]').nextElementSibling.textContent`), /^Copied/);
+  }
 });
 
 test('short javascript URL launches the app, submits a bid, and reuses the active instance', async () => {
