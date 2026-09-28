@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/png" href="../assets/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Purr Review — local demonstration</title>
+  <style>
+    :root { color-scheme: light; font: 15px/1.5 system-ui, sans-serif; color: #282828; background: #ffffff; }
+    body { max-width: 1220px; margin: auto; padding: 42px 24px; }
+    h1 { margin: 0 0 8px; font-size: 32px; letter-spacing: -.04em; }
+    p { max-width: 760px; }
+    button { border: 1px solid #dee2e6; border-radius: 8px; background: white; color: #282828; padding: 10px 16px; font: inherit; cursor: pointer; }
+    button.primary { background: #007ea3; border-color: #007ea3; color: white; }
+    button:hover { filter: brightness(.94); }
+    table { border-collapse: collapse; width: 100%; background: white; font-size: 13px; }
+    .table-container { overflow: auto; border: 1px solid #dee2e6; border-radius: 12px; }
+    td, th { padding: 12px; border-bottom: 1px solid #dee2e6; text-align: left; vertical-align: top; }
+    th { background: #f8f9fa; white-space: nowrap; }
+    a { color: #027a9d; }
+    .submission { min-width: 250px; }
+    .submission strong { display: block; margin-bottom: 8px; }
+    .secondary ul { padding-left: 16px; margin: 0; }
+    .error { color: #58151c; }
+    dialog { max-width: 420px; border: 1px solid #dee2e6; border-radius: 12px; padding: 24px; }
+    dialog::backdrop { background: #28282866; }
+    @media(max-width: 600px) { body { padding: 22px 14px; } h1 { font-size: 27px; } }
+  </style>
+  <link rel="stylesheet" href="cmt-layout.css">
+</head>
+<body>
+  <button type="button" class="primary" id="launch">Launch Purr Review</button>
+
+  <div class="table-container">
+    <table aria-label="Reviewer Console" id="BiddingModel">
+      <thead>
+        <tr id="titles">
+          <th rowspan="2" data-sort="Id"><a href="#" role="button">Paper ID</a></th>
+          <th rowspan="2" data-sort="Title"><a href="#" role="button">Title</a></th>
+          <th rowspan="2" data-sort="Track"><a href="#" role="button">Track</a></th>
+          <th colspan="2">Subject Areas</th>
+          <th rowspan="3">Review &amp; Discussion</th>
+          <th rowspan="2" data-sort="Relevance">Relevance</th>
+          <th rowspan="2" data-sort="TpmsRank">TPMS Rank</th>
+          <th rowspan="2" data-sort="BidId"><a href="#" role="button">Your Bid</a></th>
+        </tr>
+        <tr>
+          <th data-sort="PrimarySubject">primary</th>
+          <th data-sort="SecondarySubject">secondary</th>
+        </tr>
+        <tr aria-hidden="true">
+          <th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th>
+        </tr>
+      </thead>
+      <tbody data-bind="foreach: biddingModels"></tbody>
+    </table>
+  </div>
+  <script type="text/html" id="bidTemplate"><span><select data-bind="options: $data.options, optionsCaption: 'Select bid...', optionsText: 'name', optionsValue: 'id', selectedOptions: $data.selectedBid"></select></span></script>
+  <dialog id="cmt-demo-dialog" aria-labelledby="dialog-title">
+    <h2 id="dialog-title">Simulated CMT notice</h2>
+    <p>No bid was submitted. Close this notice and relaunch Purr Review.</p>
+    <button type="button" id="close-dialog">Close notice</button>
+  </dialog>
+  <script src="fixture.js"></script>
+  <script src="cmt-layout.js"></script>
+</body>
+</html>

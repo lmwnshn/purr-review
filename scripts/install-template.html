@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Purr Review - triage for CMT bidding</title>
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#424242;background:#ffffff;font-synthesis:none}
+    *{box-sizing:border-box}body{margin:0}a{color:inherit;text-underline-offset:4px}a:focus-visible,button:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #fe3c72;outline-offset:5px}
+    .wrap{max-width:1100px;margin:0 auto;padding:35px 36px 28px}.brand{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;text-decoration:none}.github-mark{width:25px;height:25px;fill:currentColor;flex:none}.muted{color:#424242}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #42424226;padding-bottom:24px}.local{font-size:12px;color:#424242}.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#ef4a75;margin-right:6px}
+    main{display:grid;gap:28px;padding:36px 0}.install-row{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.035em;line-height:1.12;font-size:44px;margin:0;max-width:500px}.install{display:inline-flex;align-items:center;gap:19px;background:#fe3c7226;color:#424242;border-radius:8px;padding:14px 22px;text-decoration:none;font-size:15px;font-weight:650;box-shadow:0 4px 10px #fe3c7214;margin:0 0 8px;transition:background .15s}.install:hover{background:#fd55643d}.hint{font-size:12px;line-height:1.7;color:#424242;margin:0}.demo-link{display:inline-block;font-size:13px;margin-top:12px;color:#424242;text-decoration-color:#fe3c72}
+    .media-row{display:grid;grid-template-columns:minmax(0,27fr) minmax(0,32fr);gap:24px;align-items:center}
+    .banner{display:block;width:100%;height:auto;border-radius:10px}
+    .demo-video{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#424242;border:1px solid #fe3c7233;border-radius:10px;box-shadow:0 12px 36px #4242420a}
+    .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;border-top:1px solid #42424226;padding:28px 0 35px}.step{font-size:13px;line-height:1.75;color:#424242}.step b{display:block;color:#424242;font-weight:650;margin-bottom:5px}.number{display:inline-grid;place-items:center;border:1px solid #ef4a7566;width:21px;height:21px;border-radius:50%;font-size:10px;margin-right:7px}
+    details{border-top:1px solid #42424226;padding:20px 0;color:#424242;font-size:13px;line-height:1.8}summary{cursor:pointer;font-weight:600;list-style-position:outside;margin-left:15px}details p{margin:14px 0}textarea{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px;display:block;width:100%;height:94px;border:1px solid #42424226;background:#ffffff;border-radius:6px;padding:10px;resize:vertical;color:#424242;word-break:break-all}button{font:inherit;cursor:pointer;background:#fe3c7214;border:1px solid #fe3c7266;color:#424242;border-radius:6px;padding:7px 13px;margin-top:10px}#copy-status{margin-left:10px;font-size:12px}kbd{font:inherit;font-size:11px;padding:1px 5px;border:1px solid #42424226;border-radius:4px;background:#42424205;white-space:nowrap}.key-help{line-height:2.5}.footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid #42424226;padding-top:20px;font-size:11px;line-height:1.7;color:#424242}.footer .brand{margin-left:auto}
+    @media(max-width:760px){.wrap{padding:20px}main{gap:24px;padding:28px 0}.install-row,.media-row{grid-template-columns:1fr;gap:20px}h1{font-size:36px}.demo-video{border-radius:6px}.steps{grid-template-columns:1fr;gap:17px}.local{font-size:10px}.footer{flex-direction:column;gap:7px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top"><a class="brand" href="https://github.com/lmwnshn/purr-review" target="_blank" rel="noopener noreferrer" aria-label="lmwnshn/purr-review on GitHub" title="GitHub"><svg class="github-mark" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span class="brand-name">lmwnshn/purr-review</span></a><span class="local"><span class="dot"></span>Bookmarklet</span></header>
+    <main>
+      <section class="install-row">
+        <h1>Install Purr Review</h1>
+        <div>
+          <a class="install" href="{{BOOKMARKLET}}" title="Drag Purr Review to your browser’s bookmarks bar">Purr Review <span aria-hidden="true">↗</span></a>
+          <p class="hint">Drag this button to your bookmarks bar.<br>Then open CMT’s paper-bidding page and click the bookmark.</p>
+          <a class="demo-link" href="demo/index.html">Open local demo <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+      <div class="media-row">
+        <img class="banner" src="assets/purr-review-banner.webp" width="1536" height="1024" alt="Purr Review — an orange cat reviewing papers at a desk">
+      <video class="demo-video" controls muted playsinline loop preload="metadata" poster="demo/purr-review-demo.jpg" aria-label="Purr Review demo: simulated CMT screen, bookmarklet launch, accelerated navigation, a final Willing button click, and Zero install. Just add a bookmark.">
+        <source src="demo/purr-review-demo.mp4" type="video/mp4">
+        <a href="demo/purr-review-demo.mp4">Download demo video</a>
+      </video>
+      </div>
+    </main>
+    <section class="steps" aria-label="Getting started">
+      <div class="step"><b><span class="number">1</span> Load papers</b>Sign into CMT and open bidding. Select <strong>Show all</strong> if available. Only loaded papers are included.</div>
+      <div class="step"><b><span class="number">2</span> Launch bookmark</b>Click Purr Review in your bookmarks bar. Use the sidebar to select any loaded paper, including an existing bid.</div>
+      <div class="step"><b><span class="number">3</span> Set bids</b>Use arrow keys, swipe, or tap a decision. Undo restores the previous CMT bid.</div>
+    </section>
+    <details>
+      <summary>Copy the bookmarklet manually</summary>
+      <p>Create a bookmark named <strong>Purr Review</strong>. Paste the complete text below into its URL field, including <code>javascript:</code>. Save it and launch it on your CMT bidding page.</p>
+      <label for="bookmarklet-code">Bookmark URL</label>
+      <textarea id="bookmarklet-code" readonly spellcheck="false" aria-label="Complete Purr Review bookmark URL">{{BOOKMARKLET}}</textarea>
+      <button id="copy-bookmarklet" type="button">Copy bookmark URL</button><span id="copy-status" role="status" aria-live="polite"></span>
+    </details>
+    <details>
+      <summary>Controls, privacy, and troubleshooting</summary>
+      <p class="key-help"><kbd>←</kbd> Not Willing &nbsp; <kbd>↓</kbd> In a Pinch &nbsp; <kbd>→</kbd> Willing &nbsp; <kbd>↑</kbd> Eager<br><kbd>Z</kbd> Undo &nbsp; <kbd>Enter</kbd> Details &nbsp; <kbd>S</kbd> Skip without bidding &nbsp; <kbd>Esc</kbd> Close panel or exit</p>
+      <p>Fully local to your CMT session.</p>
+      <p>Vibe-coded software, caveat emptor.</p>
+    </details>
+    <footer class="footer"><span>Not affiliated with Microsoft.</span><a class="brand" href="https://github.com/lmwnshn/purr-review" target="_blank" rel="noopener noreferrer" aria-label="lmwnshn/purr-review on GitHub" title="GitHub"><svg class="github-mark" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span class="brand-name">lmwnshn/purr-review</span></a></footer>
+  </div>
+  <script>
+    document.getElementById('copy-bookmarklet').addEventListener('click', async () => {
+      const field = document.getElementById('bookmarklet-code');
+      const status = document.getElementById('copy-status');
+      try {
+        if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+        await navigator.clipboard.writeText(field.value);
+        status.textContent = 'Copied. Paste into your bookmark’s URL field.';
+      } catch {
+        field.focus(); field.select(); field.setSelectionRange(0, field.value.length);
+        let copied = false;
+        try { copied = document.execCommand('copy'); } catch {}
+        status.textContent = copied ? 'Copied. Paste into your bookmark’s URL field.' : 'Code selected. Press Ctrl+C (or ⌘C) to copy.';
+      }
+    });
+  </script>
+</body>
+</html>
