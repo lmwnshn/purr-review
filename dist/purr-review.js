@@ -637,9 +637,9 @@ function launchPurrReview() {
 
   function downloadCSV() {
     const quote = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
-    const rows = [['Title', 'Abstract', 'Decision', 'Relevance', 'TPMS'], ...state.papers.map(paper => {
+    const rows = [['Paper ID', 'Title', 'Abstract', 'Decision', 'Relevance', 'TPMS'], ...state.papers.map(paper => {
       const bid = currentBid(paper);
-      return [paper.title, paper.abstract, bid === 'Not Entered' ? 'TBD' : bid || 'Unavailable', paper.relevance, paper.tpmsRank];
+      return [paper.id, paper.title, paper.abstract, bid === 'Not Entered' ? 'TBD' : bid || 'Unavailable', paper.relevance, paper.tpmsRank];
     })];
     const csv = '\uFEFF' + rows.map(row => row.map(quote).join(',')).join('\r\n') + '\r\n';
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));

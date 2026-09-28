@@ -733,8 +733,8 @@ test('Download saves a UTF-8 CSV with all papers, escaped text, and confirmed de
     papers[0].title = title;
     papers[0].abstract = abstract;
     const quote = value => '"' + value.replace(/"/g, '""') + '"';
-    const expectedRows = [['Title', 'Abstract', 'Decision', 'Relevance', 'TPMS'], ...papers.map((paper, i) => [
-      paper.title, paper.abstract, i === 0 ? 'Willing' : paper.conflict ? 'Unavailable' : paper.bid === 'Not Entered' ? 'TBD' : paper.bid, '0.50', String(i + 1)
+    const expectedRows = [['Paper ID', 'Title', 'Abstract', 'Decision', 'Relevance', 'TPMS'], ...papers.map((paper, i) => [
+      paper.id, paper.title, paper.abstract, i === 0 ? 'Willing' : paper.conflict ? 'Unavailable' : paper.bid === 'Not Entered' ? 'TBD' : paper.bid, '0.50', String(i + 1)
     ])];
     assert.equal(csv, '\uFEFF' + expectedRows.map(row => row.map(quote).join(',')).join('\r\n') + '\r\n');
     assert.equal(await page.evaluate('demo.requests.length'), 1);
