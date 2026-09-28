@@ -45,10 +45,11 @@
       <div class="step"><b><span class="number">3</span> Set bids</b>Use arrow keys, swipe, or tap a decision. Undo restores the previous CMT bid.</div>
     </section>
     <details>
-      <summary>Copy the bookmarklet manually</summary>
-      <p>Create a bookmark named <strong>Purr Review</strong>. Paste the complete text below into its URL field, including <code>javascript:</code>. Save it and launch it on your CMT bidding page.</p>
+      <summary>Install on mobile / copy bookmark URL</summary>
+      <p>Create a bookmark named <strong>Purr Review</strong>. Paste the complete text below into its URL field, including <code>javascript:</code>. On Chrome Android, open CMT, type <strong>Purr Review</strong> in the address bar, and tap the saved bookmark suggestion.</p>
+      <p>This short bookmark downloads the app from this site. Paper data stays in your CMT session. <a href="dist/bookmarklet.txt">Full self-contained bookmark URL</a> for desktop/offline use.</p>
       <label for="bookmarklet-code">Bookmark URL</label>
-      <textarea id="bookmarklet-code" readonly spellcheck="false" aria-label="Complete Purr Review bookmark URL">{{BOOKMARKLET}}</textarea>
+      <textarea id="bookmarklet-code" readonly spellcheck="false" aria-label="Complete Purr Review bookmark URL">{{MOBILE_BOOKMARKLET}}</textarea>
       <button id="copy-bookmarklet" type="button">Copy bookmark URL</button><span id="copy-status" role="status" aria-live="polite"></span>
     </details>
     <details>

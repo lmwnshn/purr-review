@@ -31,12 +31,21 @@ const bookmarklet = `javascript:${encodeURIComponent(result.code)}`;
 if (decodeURIComponent(bookmarklet.slice(11)) !== result.code) {
   throw new Error('Bookmarklet encoding failed verification.');
 }
+const loaderSource = await readFile(resolve(root, 'src/loader.js'), 'utf8');
+const loaderResult = await minify(loaderSource, { ecma: 2020, compress: true, mangle: true, format: { ascii_only: true } });
+if (!loaderResult.code) throw new Error('Loader minification failed.');
+new vm.Script(loaderResult.code);
+const mobileBookmarklet = `javascript:${encodeURIComponent(loaderResult.code)}`;
+if (mobileBookmarklet.length >= 2000) throw new Error('Keep the mobile bookmarklet below 2,000 characters.');
+if (decodeURIComponent(mobileBookmarklet.slice(11)) !== loaderResult.code) throw new Error('Loader encoding failed.');
+
 const escapeHTML = value => value.replace(/[&<>"']/g, ch => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 })[ch]);
 const template = await readFile(resolve(root, 'scripts/install-template.html'), 'utf8');
 const replacements = {
   BOOKMARKLET: escapeHTML(bookmarklet),
+  MOBILE_BOOKMARKLET: escapeHTML(mobileBookmarklet),
   BOOKMARKLET_BYTES: Buffer.byteLength(bookmarklet).toLocaleString('en-US'),
   SCRIPT_BYTES: Buffer.byteLength(result.code).toLocaleString('en-US'),
 };
@@ -48,6 +57,7 @@ await mkdir(resolve(root, 'dist'), { recursive: true });
 await Promise.all([
   writeFile(resolve(root, 'dist/purr-review.js'), readable),
   writeFile(resolve(root, 'dist/purr-review.min.js'), `${result.code}\n`),
+  writeFile(resolve(root, 'dist/bookmarklet-mobile.txt'), `${mobileBookmarklet}\n`),
   writeFile(resolve(root, 'dist/bookmarklet.txt'), `${bookmarklet}\n`),
   writeFile(resolve(root, 'index.html'), installer),
 ]);

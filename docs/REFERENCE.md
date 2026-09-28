@@ -41,11 +41,11 @@ The demo and tests use synthetic placeholders. No saved CMT pages or private cap
 
 The adapter waits for CMT to close its editor and reflect the requested bid, checks for errors/dialogs, and verifies the displayed bid remains stable. It never calls CMT’s private endpoints or assumes numeric option IDs.
 
-No live browser bookmark-storage limit or CMT content-security-policy restriction has been measured. The build prints the actual minified and URL-encoded sizes. If your bookmark does nothing, first check that its saved URL starts with `javascript:` and has not been truncated. Check the console for a concrete policy or script error and preserve its exact message. There is no hosted-loader fallback or remote bootstrap.
+Android single-line text editors default to a 5,000-character limit ([Android source](https://android.googlesource.com/platform/frameworks/base/+/223c8e0%5E%21/)); Chrome’s bookmark URL field uses this kind of editor. The reported cutoff near `rowConnected` matches this limit. CMT content-security-policy restrictions have not been measured on a logged-in mobile session. The build prints the actual minified and URL-encoded sizes. If your bookmark does nothing, first check that its saved URL starts with `javascript:` and has not been truncated. Check the console for a concrete policy or script error and preserve its exact message. For browsers that truncate the full bookmark, `dist/bookmarklet-mobile.txt` is a short loader. It downloads the static app script from `https://wanshenl.me/purr-review/dist/purr-review.min.js` with no referrer and anonymous CORS (no cross-origin cookies). It sends no paper data. A load failure produces an alert; CMT may still block external scripts through its content-security policy. The saved loader uses the current hosted release. Android bookmark storage/launch has not been verified on a device.
 
 ## Privacy
 
-The application loads no third-party scripts, fonts, assets, analytics, or services. It does not read credentials or send paper data elsewhere. CMT’s own controls continue to make CMT’s normal authenticated requests. The bookmarklet runs only in the page where you launch it.
+The self-contained bookmark loads no remote scripts, fonts, assets, analytics, or services. The optional mobile loader downloads the app script from the project site; it does not add analytics or upload paper data. It does not read credentials or send paper data elsewhere. CMT’s own controls continue to make CMT’s normal authenticated requests. The bookmarklet runs only in the page where you launch it.
 
 ## Source and outputs
 
@@ -53,7 +53,8 @@ The application loads no third-party scripts, fonts, assets, analytics, or servi
 - `src/app.js`: state/history, serialized synchronization, input, gestures, interface, animation, and cleanup.
 - `dist/purr-review.js`: readable, self-contained script.
 - `dist/purr-review.min.js`: production script, with no runtime dependencies.
-- `dist/bookmarklet.txt`: complete single `javascript:` URL.
+- `dist/bookmarklet.txt`: complete self-contained `javascript:` URL.
+- `src/loader.js` / `dist/bookmarklet-mobile.txt`: optional short hosted loader.
 - `index.html`: installation page with the full URL embedded; no fetch needed.
 - `demo/index.html`: local simulation.
 
@@ -71,7 +72,7 @@ If Terser 5.44.0 is already installed where Node can resolve it, `node scripts/b
 Run the browser regression suite with a local Chrome installation:
 
 ```sh
-node --test tests/browser.test.mjs
+node --test tests/*.test.mjs
 ```
 
 The interactive demo and recording share a reference-inspired CMT layout with synthetic identities and paper data, including an anonymous “1 - XXX of XXX” count. The demo recording opens on this labeled simulated CMT screen, zooms into a Purr Review bookmark and clicks it, shows navigation at 2× speed, pauses for a final click on Willing and its confirmation, and closes with “Zero install. Just add a bookmark.” The browser bar is staged for the recording; its bookmark runs the actual built bookmarklet.
