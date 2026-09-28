@@ -61,7 +61,7 @@ function launchPurrReview() {
     .icon-button:hover { background:#fe3c7214; }
     .text-button { padding:2px 0; font-size:12px; text-decoration:underline; text-decoration-color:#ef4a75; text-underline-offset:4px; }
     .text-button:hover { color:#424242; text-decoration-color:currentColor; }
-    .type-button { font-size:16px; min-height:36px; padding:5px 8px; border-radius:5px; }
+    .header-right > .text-button { font-size:16px; min-height:36px; padding:5px 8px; border-radius:5px; }
     .work-area { flex:1; min-height:0; display:grid; grid-template-columns:148px minmax(0,1fr); }
     .paper-sidebar { min-height:0; display:flex; flex-direction:column; gap:6px; padding:12px 8px 0 12px; border-right:1px solid #4242421a; }
     .sort-label { font-size:11px; font-weight:650; }
@@ -167,7 +167,7 @@ function launchPurrReview() {
       .empty-state { grid-column:1 / 5; grid-row:1 / 3; } footer { padding:2px 12px 4px; } .shortcuts { gap:14px; } .hint { display:none; }
       .notice { margin:4px 12px 0; background:#fd556414; border:1px solid #fd556466; } .panel { padding:22px; box-shadow:0 25px 90px #42424226; } .modal-layer { padding:14px; background:#42424240; } .panel-body dl { grid-template-columns:95px 1fr; }
     }
-    @media(max-width:380px) { .brand-name { font-size:11px; } .brand { gap:5px; } .github-mark { width:20px; height:20px; } header { padding-inline:8px; gap:6px; } .header-right { gap:2px; } .type-button { padding-inline:5px; } .card { padding:12px; } .decision { font-size:8px; } }
+    @media(max-width:380px) { .brand-name { font-size:11px; } .brand { gap:5px; } .github-mark { width:20px; height:20px; } header { padding-inline:8px; gap:6px; } .header-right { gap:2px; } .header-right > .text-button { padding-inline:5px; } .card { padding:12px; } .decision { font-size:8px; } }
     @media(pointer:coarse) { .icon-button { width:44px; height:44px; } .brand,.shortcut,.header-right > .text-button,#paper-sort { min-height:44px; } }
     @media(pointer:coarse) and (min-width:761px) { .workspace { grid-template-rows:44px minmax(0,1fr)44px; } .decision { min-height:44px; } }
     @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
@@ -190,7 +190,7 @@ function launchPurrReview() {
     </header>
     <div class="notice" role="alert" hidden><span></span><button data-action="exit">Return to CMT ↗</button></div>
     <div class="work-area">
-    <aside class="paper-sidebar" aria-label="Papers"><label class="sort-label" for="paper-sort">Sort</label><select id="paper-sort" aria-label="Sort papers"><option value="id-asc">Paper ID ↑</option><option value="id-desc">Paper ID ↓</option><option value="relevance-desc">Relevance ↓</option><option value="relevance-asc">Relevance ↑</option></select><nav class="paper-list" aria-label="Paper list"></nav></aside>
+    <aside class="paper-sidebar" aria-label="Papers"><label class="sort-label" for="paper-sort">Sort</label><select id="paper-sort" aria-label="Sort papers"><option value="id-asc">Paper ID ↑</option><option value="id-desc">Paper ID ↓</option><option value="relevance-desc">Relevance ↓</option><option value="relevance-asc">Relevance ↑</option><option value="decision-asc">Decision ↑</option><option value="decision-desc">Decision ↓</option></select><nav class="paper-list" aria-label="Paper list"></nav></aside>
     <main class="workspace">
       <div class="card-slot"><article class="card" aria-label="Current paper">
         <div class="stamp" aria-hidden="true"></div>
@@ -270,11 +270,15 @@ function launchPurrReview() {
 
   function announce(message) { $('#announcement').textContent = message; }
   function setStatus(text) { state.status = text; announce(text); renderStatus(); }
+  function currentBid(paper) {
+    return paper.disabledReason ? paper.existingBid : state.bids.get(paper.id);
+  }
+
   function downloadCSV() {
     const quote = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
-    const rows = [['Title', 'Abstract', 'Decision'], ...state.papers.map(paper => {
-      const bid = paper.disabledReason ? paper.existingBid : state.bids.get(paper.id);
-      return [paper.title, paper.abstract, bid === 'Not Entered' ? 'TBD' : bid || 'Unavailable'];
+    const rows = [['Title', 'Abstract', 'Decision', 'Relevance', 'TPMS'], ...state.papers.map(paper => {
+      const bid = currentBid(paper);
+      return [paper.title, paper.abstract, bid === 'Not Entered' ? 'TBD' : bid || 'Unavailable', paper.relevance, paper.tpmsRank];
     })];
     const csv = '\uFEFF' + rows.map(row => row.map(quote).join(',')).join('\r\n') + '\r\n';
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
@@ -291,7 +295,7 @@ function launchPurrReview() {
   function renderBidCounts() {
     const counts = new Map(COUNT_BIDS.map(bid => [bid, 0]));
     for (const paper of state.papers) {
-      const bid = paper.disabledReason ? paper.existingBid : state.bids.get(paper.id);
+      const bid = currentBid(paper);
       if (counts.has(bid)) counts.set(bid, counts.get(bid) + 1);
     }
     for (const item of $$('.bid-total')) item.querySelector('dd').textContent = String(counts.get(item.dataset.countBid));
@@ -322,6 +326,15 @@ function launchPurrReview() {
   function comparePapers(a, b) {
     const byID = a.id.localeCompare(b.id, undefined, { numeric: true });
     if (state.sort.startsWith('id-')) return state.sort === 'id-desc' ? -byID : byID;
+    if (state.sort.startsWith('decision-')) {
+      const rank = paper => {
+        const bid = currentBid(paper);
+        const index = BIDS.indexOf(bid);
+        if (index < 0) return bid === 'Not Entered' ? BIDS.length : BIDS.length + 1;
+        return state.sort === 'decision-desc' ? BIDS.length - 1 - index : index;
+      };
+      return rank(a) - rank(b) || byID;
+    }
     const score = paper => {
       const value = String(paper.relevance ?? '').trim();
       return value && Number.isFinite(Number(value)) ? Number(value) : null;
@@ -797,7 +810,7 @@ function launchPurrReview() {
   root.addEventListener('change', event => {
     if (event.target.id !== 'paper-sort') return;
     const sort = event.target.value;
-    if (state.busy || state.blocked || state.pageDialog || state.panel || !['id-asc', 'id-desc', 'relevance-asc', 'relevance-desc'].includes(sort)) {
+    if (state.busy || state.blocked || state.pageDialog || state.panel || !['id-asc', 'id-desc', 'relevance-asc', 'relevance-desc', 'decision-asc', 'decision-desc'].includes(sort)) {
       event.target.value = state.sort;
       return;
     }

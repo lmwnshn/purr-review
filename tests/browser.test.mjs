@@ -687,6 +687,7 @@ test('the simplified workspace exposes its repository link and readable text set
   const repository = `${shadow}.querySelector('a[href="https://github.com/lmwnshn/purr-review"]')`;
   assert.match(await page.evaluate(`${repository}.textContent`), /lmwnshn\/purr-review/);
   assert.equal(await page.evaluate(`Boolean(${repository}.querySelector('svg'))`), true);
+  assert.equal(await page.evaluate(`getComputedStyle(${shadow}.querySelector('[data-action="download"]')).fontSize`), await page.evaluate(`getComputedStyle(${shadow}.querySelector('[data-action="text-size"]')).fontSize`));
   assert.ok(await page.evaluate(`parseFloat(getComputedStyle(${shadow}.querySelector('[data-action="text-size"]')).fontSize) >= 16`));
   assert.doesNotMatch(await page.evaluate(`${shadow}.querySelector('.shell').innerText`), /\bReady\b|Not yet bid|Diagnostics|confirmed this session|\bloaded\b|existing bids/);
   assert.equal(await page.evaluate(`${shadow}.querySelectorAll('.paper-list .paper-item').length`), 7);
@@ -732,8 +733,8 @@ test('Download saves a UTF-8 CSV with all papers, escaped text, and confirmed de
     papers[0].title = title;
     papers[0].abstract = abstract;
     const quote = value => '"' + value.replace(/"/g, '""') + '"';
-    const expectedRows = [['Title', 'Abstract', 'Decision'], ...papers.map((paper, i) => [
-      paper.title, paper.abstract, i === 0 ? 'Willing' : paper.conflict ? 'Unavailable' : paper.bid === 'Not Entered' ? 'TBD' : paper.bid
+    const expectedRows = [['Title', 'Abstract', 'Decision', 'Relevance', 'TPMS'], ...papers.map((paper, i) => [
+      paper.title, paper.abstract, i === 0 ? 'Willing' : paper.conflict ? 'Unavailable' : paper.bid === 'Not Entered' ? 'TBD' : paper.bid, '0.50', String(i + 1)
     ])];
     assert.equal(csv, '\uFEFF' + expectedRows.map(row => row.map(quote).join(',')).join('\r\n') + '\r\n');
     assert.equal(await page.evaluate('demo.requests.length'), 1);
@@ -741,4 +742,33 @@ test('Download saves a UTF-8 CSV with all papers, escaped text, and confirmed de
     await page.call('Browser.setDownloadBehavior', { behavior: 'default' });
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+
+test('current Decision sorting breaks ties by numeric Paper ID and updates after bids and undo', async () => {
+  await fixture();
+  await page.evaluate(`(() => {
+    const ids = ['2', '10', '3', '20', '8', '11', '100'];
+    const bids = ['Willing', 'In a Pinch', 'Willing', 'Eager', 'Not Entered', 'Not Willing', 'Not Entered'];
+    demo.initial.forEach((paper, i) => { paper.id = ids[i]; paper.bid = bids[i]; });
+    demo.reset();
+  })()`);
+  await startApp();
+  await sortPapers('decision-desc');
+  assert.deepEqual(await sidebarIds(), ['20', '2', '3', '10', '11', '100', '8']);
+  await sortPapers('decision-asc');
+  assert.deepEqual(await sidebarIds(), ['11', '10', '2', '3', '20', '100', '8']);
+  assert.equal(await currentPaperId(), '100');
+  await page.evaluate(click('skip'));
+  await settledUI();
+  assert.deepEqual(await sidebarIds(), ['11', '10', '2', '3', '20', '100', '8']);
+  await page.evaluate(`${paperItem('100')}.click()`);
+  await page.evaluate(`${shadow}.querySelector('[data-action="bid"][data-bid="Willing"]').click()`);
+  await settle(1);
+  await settledUI();
+  assert.deepEqual(await sidebarIds(), ['11', '10', '2', '3', '100', '20', '8']);
+  await page.evaluate(click('undo'));
+  await settle(2);
+  await settledUI();
+  assert.deepEqual(await sidebarIds(), ['11', '10', '2', '3', '20', '100', '8']);
 });

@@ -4,7 +4,9 @@ Commands and paths below are relative to the repository root.
 
 ## Use
 
-Download exports all loaded papers to `purr-review.csv` with Title, Abstract, and Decision columns. Decisions reflect confirmed bids; unbid papers are TBD and unknown bids are Unavailable. The file is generated locally.
+Decision sorting uses current bids, from Not Willing through Eager (or the reverse), followed by TBD and unavailable papers. Every sort breaks ties by ascending numeric Paper ID.
+
+Download exports all loaded papers to `purr-review.csv` with Title, Abstract, Decision, Relevance, and TPMS columns. Decisions reflect confirmed bids; unbid papers are TBD and unknown bids are Unavailable. The file is generated locally.
 
 The header counts all loaded papers with recognized bids. TBD means Not Entered, including skipped unbid papers. Unknown/conflicted bids are excluded. Counts change after confirmed decisions and undo.
 
